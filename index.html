@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 13px Helvetica, Arial; }
+
+      form input { border: 0; padding: 20px; width: 90%; margin-right: .5%; }
+      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      #messages { list-style-type: none; margin: 0; padding: 0; }
+      #messages li { padding: 5px 10px; }
+      #messages li:nth-child(odd) { background: #eee; }
+    </style>
+  </head>
+  <body>
+
+    <form id= "form-for-join" action="">
+      <div>userid<input id="userid" autocomplete="off" /></div>
+      <div>roomname<input id="roomname" autocomplete="off" /></div>
+      <button>Join</button>
+    </form>
+    <form id= "form-for-message" action="">
+      <p>message</p><input id="m" autocomplete="off" />
+      <button>Send</button>
+    </form>
+      <button id="btn-leave" type="submit">leave</button>
+      <ul id="messages"></ul>
+  </body>
+</html>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+<script>
+  $(function () {
+    var socket = io("/chat");
+
+    $('#form-for-join').submit(function(){
+      socket.emit('join', {
+        roomname: $('#roomname').val(),
+        userid: $('#userid').val()
+        })
+      return false;
+    });
+
+    $('#form-for-message').submit(function(){
+      socket.emit('message', {message: $('#m').val()});
+      $('#m').val('');
+      return false;
+    });
+
+    $('#btn-leave').click(function(){
+      socket.emit('leave', {
+        roomname: $('#roomname').val(),
+        userid: $('#userid').val()
+        })
+    })
+
+    socket.on('leave', function(userid){
+      $('#messages').append($('<li>').text(`${userid} 님이 ${$('#roomname').val()}방에 나가셨습니다.`));
+    });
+
+    socket.on('message', function(msg){
+      $('#messages').append($('<li>').text(msg));
+    });
+
+    socket.on('join', function(msg){
+      $('#messages').append($('<li>').text(`${msg} 님이 ${$('#roomname').val()}방에 들어오셨습니다.`));
+    });
+
+
+  });
+</script>
